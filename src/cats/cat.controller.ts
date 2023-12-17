@@ -13,7 +13,7 @@ export class CatsController {
     this.catService.create(createCatDto);
   }
 
-  @Public()
+  // @Public()
   @Get()
   async findAll(): Promise<Cat[]> {
     return this.catService.findAll();

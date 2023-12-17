@@ -3,10 +3,12 @@ import {
   Controller,
   Get,
   HttpCode,
+  HttpException,
   HttpStatus,
   Post,
   Req,
   Res,
+  UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
@@ -57,12 +59,19 @@ export class AuthController {
   refresh(@Req() request: Request) {
     const refreshToken = request.cookies['refresh_token'];
 
-    console.log('refreshToken :', refreshToken);
+    if (!refreshToken) {
+      throw new HttpException(
+        {
+          message: '리프래시 토큰이 쿠키에 존재하지 않습니다.',
+          code: 'A01',
+        },
+        HttpStatus.UNAUTHORIZED,
+      );
+      // return '리프래쉬 토큰이 존재하지 않습니다.';
+    }
 
-    if (!refreshToken) return '리프래쉬 토큰이 존재하지 않습니다.';
+    const result = this.authService.compareToken(refreshToken);
 
-    const access_token = this.authService.compareToken(refreshToken);
-
-    return access_token;
+    return result;
   }
 }

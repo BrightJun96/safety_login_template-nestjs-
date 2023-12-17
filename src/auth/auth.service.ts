@@ -1,4 +1,9 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from 'src/user/users.service';
 import { SignInDto } from './signIn.dto';
@@ -59,10 +64,26 @@ export class AuthService {
     const parsedToken = JSON.parse(JSON.stringify(decodingToken));
     const userId = parsedToken['id'];
     console.log('디코딩 리프래시 토큰 :', userId);
-    if (!userId) return '토큰에 유저 정보가 존재하지 않습니다.';
+    if (!userId) {
+      throw new HttpException(
+        {
+          message: '토큰에 유저 정보가 존재하지 않습니다',
+          code: 'A01',
+        },
+        HttpStatus.UNAUTHORIZED,
+      );
+    }
     const user = await this.usersService.findById(userId);
 
-    if (!user) return '해당 유저가 존재하지 않습니다.';
+    if (!user) {
+      throw new HttpException(
+        {
+          message: '해당 유저가 존재하지 않습니다.',
+          code: 'A01',
+        },
+        HttpStatus.UNAUTHORIZED,
+      );
+    }
     const payload = { sub: user.id, userName: user.userName };
 
     const access_token = await this.jwtService.signAsync(payload);
